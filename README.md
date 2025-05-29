@@ -8,7 +8,7 @@ etc with all the files you'd like formatted and appended to the prompt.
 In addition to this, I have a neovim keymap for copying code encapsulated by markdown code formatting:
 
 ```lua
-local function yank_with_codeblock_simple()
+local function yank_with_codeblock()
   -- Get the current buffer's filetype
   local filetype = vim.bo.filetype
   if filetype == "" then
@@ -43,7 +43,7 @@ local function yank_with_codeblock_simple()
   ), vim.log.levels.INFO)
 end
 
-vim.keymap.set("v", "<leader>yp", yank_with_codeblock_simple, { 
+vim.keymap.set("v", "<leader>yp", yank_with_codeblock, { 
   desc = "Yank selection with code block wrapper",
   silent = true 
 })
