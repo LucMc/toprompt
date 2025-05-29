@@ -169,13 +169,3 @@ fn copy_to_clipboard(text: &str) -> Result<(), Box<dyn std::error::Error>> {
     
     Err("No clipboard tool found. Please install xclip, xsel, or wl-clipboard".into())
 }
-
-// Cargo.toml contents:
-/*
-[package]
-name = "file-to-clipboard"
-version = "0.1.0"
-edition = "2021"
-
-# No dependencies needed for this version!
-*/
