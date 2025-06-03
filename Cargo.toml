@@ -2,6 +2,15 @@
 name = "toprompt"
 version = "0.1.0"
 edition = "2024"
+description = "Send files to clipboard, formatted for llms"
+license = "MIT"
+repository = "https://github.com/LucMc/toprompt"
+homepage = "https://github.com/LucMc/toprompt"
+keywords = ["cli", "tool"]
+categories = ["command-line-utilities"]
 
+[[bin]]
+name = "your-binary-name"
+path = "src/main.rs"
 [dependencies]
 clipboard = "0.5"
