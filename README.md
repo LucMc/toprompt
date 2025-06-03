@@ -1,5 +1,5 @@
 A simple rust cli tool to add mutliple files into a nice LLM prompt.
-Simply add to `toprompt/target/release' to path and run:
+
 ```sh
 toprompt file1.py file2.rs
 ```
@@ -17,7 +17,15 @@ fn main() {
 }
 ```
 ~~~
+# Installation
+Install with Cargo (Recommended):
+```sh cargo install toprompt```
 
+Alternatively, install from source
+```sh git clone https://github.com/LucMc/toprompt ```
+Then, add to `toprompt/target/release' to path.
+
+# NeoVim Bonus
 In addition to this, I have a neovim keymap for copying code encapsulated by markdown code formatting:
 
 ```lua
