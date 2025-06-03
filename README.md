@@ -4,6 +4,19 @@ Simply add to `toprompt/target/release' to path and run:
 toprompt file1.py file2.rs
 ```
 etc with all the files you'd like formatted and appended to the prompt.
+The above command would copy the following to the system clipboard:
+~~~
+# file1.py
+```python
+print("hello world")
+```
+# file2.rs
+```rust
+fn main() {
+    println!("Hello, world!");
+}
+```
+~~~
 
 In addition to this, I have a neovim keymap for copying code encapsulated by markdown code formatting:
 
