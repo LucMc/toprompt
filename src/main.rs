@@ -1,34 +1,28 @@
 use std::env;
 use std::fs;
+use std::io::{self, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
-use std::io::Write;
 
 fn main() {
     // Get command line arguments (skip the program name)
     let args: Vec<String> = env::args().skip(1).collect();
     
     if args.is_empty() {
-        eprintln!("Usage: {} <file1> [file2] [file3] ...", env::args().next().unwrap());
+        eprintln!("Usage: {} <file1|dir1> [file2|dir2] ...", env::args().next().unwrap());
         std::process::exit(1);
     }
     
     let mut formatted_content = String::new();
     let mut successful_files = 0;
+    let mut file_index = 0;
     
-    // Process each file
-    for (index, filename) in args.iter().enumerate() {
-        match process_file(filename) {
-            Ok(content) => {
-                // Add newline between files (but not before the first file)
-                if index > 0 {
-                    formatted_content.push_str("\n\n");
-                }
-                formatted_content.push_str(&content);
-                successful_files += 1;
-            }
+    // Process each argument (can be file or directory)
+    for arg in args.iter() {
+        match process_path(arg, &mut formatted_content, &mut file_index, &mut successful_files) {
+            Ok(_) => {},
             Err(e) => {
-                eprintln!("Error processing '{}': {}", filename, e);
+                eprintln!("Error processing '{}': {}", arg, e);
             }
         }
     }
@@ -41,7 +35,7 @@ fn main() {
     // Copy to clipboard
     match copy_to_clipboard(&formatted_content) {
         Ok(_) => {
-            println!("Successfully copied {} file(s) to clipboard!", successful_files);
+            println!("\nSuccessfully copied {} file(s) to clipboard!", successful_files);
             println!("\n--- Clipboard Contents ---\n");
             println!("{}", formatted_content);
         }
@@ -51,6 +45,93 @@ fn main() {
             println!("{}", formatted_content);
         }
     }
+}
+
+fn process_path(
+    path: &str,
+    formatted_content: &mut String,
+    file_index: &mut usize,
+    successful_files: &mut usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let path = Path::new(path);
+    
+    if path.is_file() {
+        // Process single file
+        match process_file(path.to_str().unwrap()) {
+            Ok(content) => {
+                if *file_index > 0 {
+                    formatted_content.push_str("\n\n");
+                }
+                formatted_content.push_str(&content);
+                *successful_files += 1;
+                *file_index += 1;
+            }
+            Err(e) => return Err(e),
+        }
+    } else if path.is_dir() {
+        // Process directory recursively
+        process_directory(path, formatted_content, file_index, successful_files)?;
+    } else {
+        return Err(format!("'{}' is neither a file nor a directory", path.display()).into());
+    }
+    
+    Ok(())
+}
+
+fn process_directory(
+    dir: &Path,
+    formatted_content: &mut String,
+    file_index: &mut usize,
+    successful_files: &mut usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Count items in directory
+    let entries: Vec<_> = fs::read_dir(dir)?
+        .filter_map(|e| e.ok())
+        .collect();
+    
+    let item_count = entries.len();
+    
+    // Check if confirmation needed
+    if item_count > 10 {
+        println!("\nWarning: Directory '{}' contains {} items.", dir.display(), item_count);
+        print!("Do you want to process all files in this directory? (y/n): ");
+        io::stdout().flush()?;
+        
+        let mut response = String::new();
+        io::stdin().read_line(&mut response)?;
+        
+        if !response.trim().to_lowercase().starts_with('y') {
+            println!("Skipping directory '{}'", dir.display());
+            return Ok(());
+        }
+    }
+    
+    // Process all entries
+    for entry in entries {
+        let path = entry.path();
+        
+        if path.is_file() {
+            // Process file
+            match process_file(path.to_str().unwrap()) {
+                Ok(content) => {
+                    if *file_index > 0 {
+                        formatted_content.push_str("\n\n");
+                    }
+                    formatted_content.push_str(&content);
+                    *successful_files += 1;
+                    *file_index += 1;
+                }
+                Err(e) => {
+                    eprintln!("Error processing '{}': {}", path.display(), e);
+                }
+            }
+        } else if path.is_dir() {
+            // Recursively process subdirectory
+            process_directory(&path, formatted_content, file_index, successful_files)?;
+        }
+    }
+    
+    Ok(())
 }
 
 fn process_file(filename: &str) -> Result<String, Box<dyn std::error::Error>> {
