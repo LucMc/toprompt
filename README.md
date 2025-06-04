@@ -16,6 +16,7 @@ fn main() {
     println!("Hello, world!");
 }
 ```
+~~~
 
 ## Advanced options
 ```sh
@@ -24,17 +25,16 @@ toprompt . # Copy all files in current/specified folder
 toprompt -r . # Copy all files in current/specified folder and subfolders recursively
 toprompt -i . # Use .gitignore to not copy exclude specified files from copying
 toprompt -ri . # Use .gitignore and recuse through subfolders
-toprompt -R *.py . # Copy all python files in current/specified folder and subfolders recursively
+toprompt -i -R ".*\.py" . # Copy all python files in current/specified folder and subfolders recursively and use .gitignore
 ```
 
-~~~
 # Installation
 Install with Cargo (Recommended):
 ```sh cargo install toprompt```
 
 Alternatively, install from source
 ```sh git clone https://github.com/LucMc/toprompt ```
-Then, add to `toprompt/target/release' to path.
+Then add to `toprompt/target/release' to path.
 
 # NeoVim Bonus
 In addition to this, I have a neovim keymap for copying code encapsulated by markdown code formatting:
