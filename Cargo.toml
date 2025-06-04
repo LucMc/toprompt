@@ -14,3 +14,4 @@ name = "toprompt"
 path = "src/main.rs"
 [dependencies]
 clipboard = "0.5"
+regex = "1"

@@ -16,6 +16,17 @@ fn main() {
     println!("Hello, world!");
 }
 ```
+
+## Advanced options
+```sh
+toprompt *.py # wildcards/ regex for specific files
+toprompt . # Copy all files in current/specified folder
+toprompt -r . # Copy all files in current/specified folder and subfolders recursively
+toprompt -i . # Use .gitignore to not copy exclude specified files from copying
+toprompt -ri . # Use .gitignore and recuse through subfolders
+toprompt -R *.py . # Copy all python files in current/specified folder and subfolders recursively
+```
+
 ~~~
 # Installation
 Install with Cargo (Recommended):
