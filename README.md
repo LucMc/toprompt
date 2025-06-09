@@ -82,6 +82,6 @@ vim.keymap.set("v", "<leader>yp", yank_with_codeblock, {
 ```
 
 Roadmap:
- - Prompt templats for basic validation - I.e. 'Are there any logical errors in this code?' etc
+ - Prompt templates for basic validation - I.e. 'Are there any logical errors in this code?', generating tests, explaining, etc.
  - Direct LLM integration to hit key and run
 

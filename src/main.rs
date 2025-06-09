@@ -10,14 +10,16 @@ struct Config {
     verbose: bool,
     recursive: bool,
     regex_pattern: Option<String>,
+    use_xml: bool,
     paths: Vec<String>,
 }
 
 fn print_usage() {
     eprintln!(
-        "Usage: {} [-i] [-v] [-r] [-R <pattern>] <file1|dir1> [file2|dir2] ...",
+        "Usage: {} [--xml] [-i] [-v] [-r] [-R <pattern>] <file1|dir1> [file2|dir2] ...",
         env::args().next().unwrap_or_else(|| "toprompt".to_string())
     );
+    eprintln!("  --xml          Format output using XML tags for each file.");
     eprintln!("  -i             Use .gitignore files to exclude files/directories");
     eprintln!("  -v             Verbose output (show ignored files, detailed success messages, and preview)");
     eprintln!("  -r             Recursively process subdirectories");
@@ -90,6 +92,7 @@ fn main() {
                     successful_files
                 );
                 if config.use_gitignore { println!("(.gitignore rules were applied)"); }
+                if config.use_xml { println!("(XML format was used)"); }
                 if config.recursive { println!("(Recursive mode was active)"); }
                 if config.regex_pattern.is_some() {
                     println!("(Regex filter '{}' was applied)", config.regex_pattern.as_ref().unwrap());
@@ -139,12 +142,15 @@ fn parse_args() -> Config {
         verbose: false,
         recursive: false,
         regex_pattern: None,
+        use_xml: false,
         paths: Vec::new(),
     };
 
     let mut iter = env::args().skip(1).peekable();
     while let Some(arg) = iter.next() {
-        if arg == "-R" {
+        if arg == "--xml" {
+            config.use_xml = true;
+        } else if arg == "-R" {
             if let Some(pattern) = iter.next() {
                 if pattern.starts_with('-') && pattern.len() > 1 && pattern.chars().nth(1).map_or(false, |c| c.is_alphabetic() && c != 'R') {
                     eprintln!("Error: -R flag requires a regex pattern, but got '{}'. Did you forget to provide a pattern or quote it?", pattern);
@@ -209,7 +215,7 @@ fn process_path(
             }
         }
 
-        match process_file(absolute_path.to_str().unwrap()) {
+        match process_file(absolute_path.to_str().unwrap(), config) {
             Ok((file_content_segment, display_name_str)) => { // Expect tuple
                 if *file_index > 0 {
                     formatted_content.push_str("\n\n");
@@ -344,7 +350,7 @@ fn process_directory(
             }
 
             if process_this_file {
-                match process_file(entry_abs_path.to_str().unwrap()) {
+                match process_file(entry_abs_path.to_str().unwrap(), config) {
                     Ok((file_content_segment, display_name_str)) => { // Expect tuple
                         if *file_index > 0 {
                             formatted_content.push_str("\n\n");
@@ -536,21 +542,29 @@ fn load_gitignore(dir_containing_gitignore: &Path) -> GitIgnore {
 }
 
 // Returns (formatted_content_for_this_file, display_name_string)
-fn process_file(filepath_str: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
+fn process_file(filepath_str: &str, config: &Config) -> Result<(String, String), Box<dyn std::error::Error>> {
     let contents = fs::read_to_string(filepath_str)?;
-    let language = get_language_from_extension(filepath_str);
     let path_obj = Path::new(filepath_str);
     let display_name = env::current_dir()
         .ok()
         .and_then(|cwd| path_obj.strip_prefix(&cwd).ok())
         .unwrap_or(path_obj);
 
-    let formatted_segment = format!(
-        "# {}\n```{}\n{}\n```",
-        display_name.display(),
-        language,
-        contents.trim_end()
-    );
+    let formatted_segment = if config.use_xml {
+        format!(
+            "<file path=\"{}\">\n{}\n</file>",
+            display_name.display(),
+            contents.trim_end()
+        )
+    } else {
+        let language = get_language_from_extension(filepath_str);
+        format!(
+            "# {}\n```{}\n{}\n```",
+            display_name.display(),
+            language,
+            contents.trim_end()
+        )
+    };
     Ok((formatted_segment, display_name.display().to_string()))
 }
 
