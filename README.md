@@ -26,6 +26,7 @@ toprompt -r . # Copy all files in current/specified folder and subfolders recurs
 toprompt -i . # Use .gitignore to not copy exclude specified files from copying
 toprompt -ri . # Use .gitignore and recuse through subfolders
 toprompt -i -R ".*\.py" . # Copy all python files in current/specified folder and subfolders recursively and use .gitignore
+toprompt --xml "example.py" . # Copy files in XML format (best for Claude, see: https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags#why-use-xml-tags%3F)
 ```
 
 # Installation
